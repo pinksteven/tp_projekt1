@@ -1,6 +1,4 @@
 #include <iostream>
-// If this is considered STL imma loose my fucking mind
-#include <functional>
 
 template <typename T> struct DynamicList {
   T data;
@@ -68,25 +66,27 @@ template <typename T> struct DynamicList {
     }
   }
 
-  // Using bubble sort for simplicity, if the <functional> is an STL (i don't
-  // think it is tho) then we can pass a pointer to a function instead, but then
-  // we don't have lambdas when we want oneline functions
-  // also have a tutorial
-  // https://www.geeksforgeeks.org/passing-a-function-as-a-parameter-in-cpp/
-  void sort(std::function<bool(T *a, T *b)> cmp) {
+  // Using bubble sort for simplicity, lambdas didn't work with the function<>
+  // shit but work with a pointer, so fuck you geeksforgeeks, you and ur shitty
+  // guide
+  void sort(bool (*cmp)(T, T)) {
     int len = this->len();
     bool swapped;
 
     for (int i = 0; i < len - 1; i++) {
       swapped = false;
       for (int j = 0; j < len - i - 1; j++) {
-        if (cmp(data, next->data)) {
-          T temp = data;
-          data = next->data;
+        DynamicList<T> *test = this->get_pointer(j);
+        DynamicList<T> *next = test->next;
+        if (cmp(test->data, next->data)) {
+          T temp = test->data;
+          test->data = next->data;
           next->data = temp;
           swapped = true;
         }
       }
+      if (!swapped)
+        break;
     }
   }
 };
@@ -95,15 +95,15 @@ struct Edge {
   unsigned vertex1;
   unsigned vertex2;
   unsigned weight;
-  // Overloading the function to allow calling on itself or idnependently
-  bool cmp(Edge *edge) { return weight > edge->weight; };
+  // Overloading breaks passing the function and i have no idea how to pass an
+  // overloaded one
   bool cmp(Edge *edge1, Edge *edge2) { return edge1->weight > edge2->weight; };
 };
 
 int main() {
   int len;
   DynamicList<int> list;
-  std::cout << "Array length: " << std::endl;
+  std::cout << "Array length: ";
   std::cin >> len;
   for (int i = 0; i < len; i++) {
     int temp;
@@ -112,9 +112,12 @@ int main() {
     list.push(temp);
   }
 
-  std::cout << "You entered the following array: " << std::endl;
-  for (int i = 0; i < len; i++) {
+  list.sort([](int x, int y) -> bool { return x > y; });
+  std::cout << "Sorted array: " << std::endl;
+  for (int i = 0; i < len - 1; i++) {
     std::cout << list.get(i) << ", ";
   }
+  std::cout << list.get(len - 1) << std::endl;
+  std::cout << "Measured length: " << list.len() << std::endl;
   return 0;
 }
