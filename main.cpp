@@ -4,19 +4,19 @@
 
 template <typename T> struct DynamicList {
   T data;
-  DynamicList<T> *next;
-  bool initialized = false; // This allows for creation of the List without
+  DynamicList<T> *next = nullptr;
+  bool initialized = false; // This allows for creation of the List without //
                             // declaring first data, might be a better way tho
   void push(T element) {
-    DynamicList<T> *newNode = new DynamicList<T>;
-    newNode->data = element;
-    newNode->next = nullptr;
-    newNode->initialized = true;
     if (initialized && next == nullptr) {
+      DynamicList<T> *newNode = new DynamicList<T>;
+      newNode->data = element;
+      newNode->next = next;
+      newNode->initialized = true;
       next = newNode;
     } else if (!initialized) {
-      data = element;
-      initialized = true;
+      this->data = element;
+      this->initialized = true;
     } else {
       next->push(element);
     }
@@ -36,24 +36,33 @@ template <typename T> struct DynamicList {
   // Return a pointer to data of the specified index
   // i don't know how to do the nice [index] thingy
   // so this has to do
-  T *get(unsigned index) {
+  DynamicList<T> *get_pointer(unsigned index) {
     if (index == 0) {
-      return this->data;
+      return this;
+    } else {
+      return next->get_pointer(index - 1);
+    }
+  }
+
+  T get(unsigned index) {
+    if (index == 0) {
+      return data;
     } else {
       return next->get(index - 1);
     }
   }
 
-  // I have no idea if this works, pointers into pointers with pointers get's
-  // complicated fast
+  // It was needlsly complex, it's separate addresses moving everything is just
+  // plain dumb, so we just delete the one we want and replace it with the next
+  // element, which hold the next one already
   void remove(unsigned index) {
     if (index == 0) {
-      T hold;
-      for (int i = len(); i > 0; --i) {
-        hold = get(i - 1);
-        get(i - 1) = get(i);
-        remove(i);
+      if (next != nullptr) {
+        DynamicList<T> *temp = next;
+        this = temp;
+        delete this;
       }
+
     } else {
       next->remove(index - 1);
     }
@@ -92,6 +101,20 @@ struct Edge {
 };
 
 int main() {
-  std::cout << "Hello World!" << std::endl;
+  int len;
+  DynamicList<int> list;
+  std::cout << "Array length: " << std::endl;
+  std::cin >> len;
+  for (int i = 0; i < len; i++) {
+    int temp;
+    std::cout << "Element " << i + 1 << ": ";
+    std::cin >> temp;
+    list.push(temp);
+  }
+
+  std::cout << "You entered the following array: " << std::endl;
+  for (int i = 0; i < len; i++) {
+    std::cout << list.get(i) << ", ";
+  }
   return 0;
 }
