@@ -1,4 +1,6 @@
 #include <iostream>
+// If this is considered STL imma loose my fucking mind
+#include <functional>
 
 template <typename T> struct DynamicList {
   T data;
@@ -42,11 +44,42 @@ template <typename T> struct DynamicList {
     }
   }
 
-  // TODO: Actually implement sorting, with passing a compare function
-  //  i have to look into how to do this. Also we need to pick a sorting
-  //  algorithm bubble sort would be easy, but we might want something fancier
-  //  and faster
-  void sort() {}
+  // I have no idea if this works, pointers into pointers with pointers get's
+  // complicated fast
+  void remove(unsigned index) {
+    if (index == 0) {
+      T hold;
+      for (int i = len(); i > 0; --i) {
+        hold = get(i - 1);
+        get(i - 1) = get(i);
+        remove(i);
+      }
+    } else {
+      next->remove(index - 1);
+    }
+  }
+
+  // Using bubble sort for simplicity, if the <functional> is an STL (i don't
+  // think it is tho) then we can pass a pointer to a function instead, but then
+  // we don't have lambdas when we want oneline functions
+  // also have a tutorial
+  // https://www.geeksforgeeks.org/passing-a-function-as-a-parameter-in-cpp/
+  void sort(std::function<bool(T *a, T *b)> cmp) {
+    int len = this->len();
+    bool swapped;
+
+    for (int i = 0; i < len - 1; i++) {
+      swapped = false;
+      for (int j = 0; j < len - i - 1; j++) {
+        if (cmp(data, next->data)) {
+          T temp = data;
+          data = next->data;
+          next->data = temp;
+          swapped = true;
+        }
+      }
+    }
+  }
 };
 
 struct Edge {
