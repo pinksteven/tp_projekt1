@@ -20,11 +20,36 @@ template <typename T> struct DynamicList {
     }
   };
 
+  void pad() {
+    if (next == nullptr) {
+      DynamicList<T> *newNode = new DynamicList<T>;
+      newNode->next = next;
+      newNode->initialized = false;
+      next = newNode;
+    } else {
+      next->pad();
+    }
+  }
+
+  void insert(T element, unsigned index) {
+    unsigned len = this->len();
+    if (index >= len) {
+      for (unsigned i = len; i < index; i++) {
+        this->pad();
+      }
+      this->push(element);
+    } else {
+      DynamicList<T> *chosen = this->get_pointer(index);
+      chosen->data = element;
+      chosen->initialized = true;
+    }
+  }
+
   // Might be useful at some point
   unsigned len() {
     if (initialized && next == nullptr) {
       return 1;
-    } else if (initialized) {
+    } else if (next != nullptr) {
       return next->len() + 1;
     } else {
       return 0;
@@ -101,7 +126,38 @@ struct Edge {
   unsigned weight;
   // Overloading breaks passing the function and i have no idea how to pass an
   // overloaded one
-  bool cmp(Edge *edge1, Edge *edge2) { return edge1->weight > edge2->weight; };
+  static bool cmp(Edge *edge1, Edge *edge2) {
+    return edge1->weight > edge2->weight;
+  };
+};
+
+struct Graph {
+  DynamicList<Edge> edges;
+  DynamicList<DynamicList<bool>> neighbors_matrix;
+
+  void add(unsigned vertex1, unsigned vertex2, unsigned weight) {
+    edges.push({vertex1, vertex2, weight});
+
+    if (neighbors_matrix.len() <= vertex1) {
+      DynamicList<bool> temp;
+      temp.insert(true, vertex2);
+      neighbors_matrix.insert(temp, vertex1);
+    } else {
+      neighbors_matrix.get_pointer(vertex1)->data.insert(true, vertex2);
+    }
+    // It's a rectangle so it should work no matter the vertex order
+    if (neighbors_matrix.len() <= vertex2) {
+      DynamicList<bool> temp;
+      temp.insert(true, vertex1);
+      neighbors_matrix.insert(temp, vertex2);
+    } else {
+      neighbors_matrix.get_pointer(vertex2)->data.insert(true, vertex1);
+    }
+  }
+
+  bool are_connected(unsigned vertex1, unsigned vertex2) {
+    return neighbors_matrix.get(vertex1).get(vertex2);
+  }
 };
 
 int main() {
