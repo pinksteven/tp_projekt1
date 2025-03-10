@@ -57,7 +57,11 @@ template <typename T> struct DynamicList {
     if (index == 0) {
       if (next != nullptr) {
         DynamicList<T> *temp = next;
-        this = temp;
+        data = temp->data;
+        initialized = temp->initialized;
+        next = temp->next;
+        delete temp;
+      } else {
         delete this;
       }
 
@@ -112,12 +116,14 @@ int main() {
     list.push(temp);
   }
 
+  list.remove(2);
   list.sort([](int x, int y) -> bool { return x > y; });
+  len = list.len();
+  std::cout << "Measured length: " << len << std::endl;
   std::cout << "Sorted array: " << std::endl;
   for (int i = 0; i < len - 1; i++) {
     std::cout << list.get(i) << ", ";
   }
   std::cout << list.get(len - 1) << std::endl;
-  std::cout << "Measured length: " << list.len() << std::endl;
   return 0;
 }
