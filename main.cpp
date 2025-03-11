@@ -1,5 +1,17 @@
 #include <iostream>
 
+// TODO: 1. fuckin test this bullshit
+//       2. rewrite the input portion to better reflect what this code does
+//       3. implement the Kruskal Algorithm (like the task wants)
+//       4. output the result
+//       5. optional: what the hell does the dude want the code to do with the
+//       numbers again??? like the hell is this "UWAGA" send help me no
+//       understando, do we have to rewrite the data structures bc he doesn't
+//       care if we renumber vertices? how the hell are you supposed to figure
+//       out what i connected then if the input vertices don't match the numbers
+//       in the output vertices??? I got lost this code is here and i rly don't
+//       want to do a rewrite, tho the rewrite would be of the Graph struct only
+
 // Dude this got big fast
 // long shlong struct
 template <typename T> struct DynamicList {
