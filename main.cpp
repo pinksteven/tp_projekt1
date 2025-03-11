@@ -1,5 +1,7 @@
 #include <iostream>
 
+// Dude this got big fast
+// long shlong struct
 template <typename T> struct DynamicList {
   T data;
   DynamicList<T> *next = nullptr;
@@ -177,6 +179,63 @@ struct Graph {
     return neighbors_matrix.get(vertex1).get(vertex2);
   }
 };
+
+Graph rebuild(Graph graph, DynamicList<unsigned> vertices) {
+  Graph new_graph;
+  for (int i = 0; i < graph.edges.len(); i++) {
+    Edge temp = graph.edges.get(i);
+    for (int j = 0; j < vertices.len(); j++) {
+      if (vertices.get(j) == temp.vertex1 || vertices.get(j) == temp.vertex2) {
+        new_graph.add(temp.vertex1, temp.vertex2, temp.weight);
+        break;
+      }
+    }
+  }
+  return new_graph;
+}
+
+// Straight i keep forgetting my logic as i write, subconcious solving idk
+void traverse(Graph graph, unsigned vertex, DynamicList<bool> &visited) {
+  visited.insert(true, vertex);
+  for (int v = 0; v < graph.vertices.len(); v++) {
+    if (v > visited.len()) {
+      visited.insert(false, v);
+    }
+    // Yeah i need the vertex id instead of index so we grab it or something
+    unsigned u = graph.vertices.get(vertex);
+    if (graph.are_connected(u, v) &&
+        (visited.get(v) == false ||
+         visited.get_pointer(v)->initialized == false)) {
+      traverse(graph, v, visited);
+    }
+  }
+}
+
+// I grabbed the algorithm from the internet and modded to fit
+void split_separate(Graph graph, DynamicList<Graph> &push_here) {
+  DynamicList<bool> visited;
+  DynamicList<unsigned> connected;
+  DynamicList<unsigned> leftovers; // imma eat them
+
+  for (int u = 0; u < graph.vertices.len(); u++) {
+    for (int i = 0; i < graph.vertices.len(); i++) {
+      visited.insert(false, i);
+      traverse(graph, u, visited);
+    }
+  }
+  for (int i = 0; i < visited.len(); i++) {
+    if (visited.get(i) == true) {
+      connected.push(graph.vertices.get(i));
+    } else {
+      leftovers.push(graph.vertices.get(i));
+    }
+  }
+  push_here.push(rebuild(graph, connected));
+  if (leftovers.len() != 0) {
+    Graph what_is_this_city = rebuild(graph, leftovers);
+    split_separate(what_is_this_city, push_here);
+  }
+}
 
 int main() {
   int len;
