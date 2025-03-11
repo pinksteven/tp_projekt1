@@ -126,17 +126,35 @@ struct Edge {
   unsigned weight;
   // Overloading breaks passing the function and i have no idea how to pass an
   // overloaded one
-  static bool cmp(Edge *edge1, Edge *edge2) {
-    return edge1->weight > edge2->weight;
+  static bool cmp(Edge edge1, Edge edge2) {
+    return edge1.weight > edge2.weight;
   };
 };
 
 struct Graph {
   DynamicList<Edge> edges;
+  DynamicList<unsigned> vertices;
   DynamicList<DynamicList<bool>> neighbors_matrix;
 
   void add(unsigned vertex1, unsigned vertex2, unsigned weight) {
     edges.push({vertex1, vertex2, weight});
+
+    bool vertex1_in_list = false;
+    bool vertex2_in_list = false;
+    for (int i = 0; i < vertices.len(); i++) {
+      if (vertices.get(i) == vertex1) {
+        vertex1_in_list = true;
+      }
+      if (vertices.get(i) == vertex2) {
+        vertex2_in_list = true;
+      }
+    }
+    if (!vertex1_in_list) {
+      vertices.push(vertex1);
+    }
+    if (!vertex2_in_list) {
+      vertices.push(vertex2);
+    }
 
     if (neighbors_matrix.len() <= vertex1) {
       DynamicList<bool> temp;
@@ -162,24 +180,24 @@ struct Graph {
 
 int main() {
   int len;
-  DynamicList<int> list;
+  Graph list;
   std::cout << "Array length: ";
   std::cin >> len;
   for (int i = 0; i < len; i++) {
-    int temp;
-    std::cout << "Element " << i + 1 << ": ";
-    std::cin >> temp;
-    list.push(temp);
+    unsigned vertex1, vertex2, weight;
+
+    std::cout << "Edge in format: vertex1 vertex2 weight" << i + 1 << ": ";
+    std::cin >> vertex1 >> vertex2 >> weight;
+    list.add(vertex1, vertex2, weight);
   }
 
-  list.remove(2);
-  list.sort([](int x, int y) -> bool { return x > y; });
-  len = list.len();
+  list.edges.sort(&Edge::cmp);
+  len = list.edges.len();
   std::cout << "Measured length: " << len << std::endl;
   std::cout << "Sorted array: " << std::endl;
-  for (int i = 0; i < len - 1; i++) {
-    std::cout << list.get(i) << ", ";
+  for (int i = 0; i < len; i++) {
+    std::cout << list.edges.get(i).vertex1 << " " << list.edges.get(i).vertex2
+              << " " << list.edges.get(i).weight << std::endl;
   }
-  std::cout << list.get(len - 1) << std::endl;
   return 0;
 }
