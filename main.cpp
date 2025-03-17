@@ -144,7 +144,7 @@ struct Edge {
   // Overloading breaks passing the function and i have no idea how to pass an
   // overloaded one
   static bool cmp(Edge edge1, Edge edge2) {
-    return edge1.weight < edge2.weight;
+    return edge1.weight > edge2.weight;
   };
 };
 
