@@ -4,13 +4,6 @@
 //       2. rewrite the input portion to better reflect what this code does
 //       3. implement the Kruskal Algorithm (like the task wants)
 //       4. output the result
-//       5. optional: what the hell does the dude want the code to do with the
-//       numbers again??? like the hell is this "UWAGA" send help me no
-//       understando, do we have to rewrite the data structures bc he doesn't
-//       care if we renumber vertices? how the hell are you supposed to figure
-//       out what i connected then if the input vertices don't match the numbers
-//       in the output vertices??? I got lost this code is here and i rly don't
-//       want to do a rewrite, tho the rewrite would be of the Graph struct only
 
 // Dude this got big fast
 // long shlong struct
@@ -132,6 +125,16 @@ template <typename T> struct DynamicList {
         break;
     }
   }
+
+  bool contains(T element) {
+    if (initialized && data == element) {
+      return true;
+    } else if (next != nullptr) {
+      return next->contains(element);
+    } else {
+      return false;
+    }
+  }
 };
 
 struct Edge {
@@ -172,7 +175,7 @@ struct Graph {
 
   bool are_connected(unsigned vertex1, unsigned vertex2) {
     DynamicList<Edge> list = body.get(vertex1);
-    for (int i = 0; i < list.len(); i++) {
+    for (unsigned i = 0; i < list.len(); i++) {
       if (list.get(i).vertex2 == vertex2) {
         return true;
       }
@@ -180,6 +183,31 @@ struct Graph {
     return false;
   }
 };
+
+void traverse(Graph graph, unsigned vertex, DynamicList<unsigned> &visits) {
+  visits.push(vertex);
+  DynamicList<Edge> edgeList = graph.body.get(vertex);
+  for (unsigned i = 0; i < edgeList.len(); i++) {
+    Edge edge = edgeList.get(i);
+    if (!visits.contains(edge.vertex2)) {
+      traverse(graph, edge.vertex2, visits);
+    }
+  }
+}
+
+bool wouldFormLoop(Graph graph, Edge edge) {
+  if (graph.body.len() < edge.vertex1) {
+    return false;
+  }
+  DynamicList<unsigned> visited;
+  traverse(graph, edge.vertex1, visited);
+  for (unsigned i = 0; i < visited.len(); i++) {
+    if (visited.get(i) == edge.vertex2) {
+      return true;
+    }
+  }
+  return false;
+}
 
 int main() {
   int len;
@@ -195,9 +223,19 @@ int main() {
   }
 
   graph.edges.sort(&Edge::cmp);
-  for (int i = 0; i < graph.edges.len(); i++) {
-    std::cout << graph.edges.get(i).vertex1 << " " << graph.edges.get(i).vertex2
-              << " " << graph.edges.get(i).weight << std::endl;
+  Graph output;
+  for (unsigned i = 0; i < graph.edges.len(); i++) {
+    if (!wouldFormLoop(output, graph.edges.get(i))) {
+      output.add(graph.edges.get(i));
+    }
   }
+
+  std::cout << "Created new graph with " << output.edges.len() << " edges:\n";
+  for (unsigned i = 0; i < output.edges.len(); i++) {
+    Edge edge = output.edges.get(i);
+    std::cout << edge.vertex1 << " " << edge.vertex2 << " " << edge.weight
+              << "\n";
+  }
+
   return 0;
 }
