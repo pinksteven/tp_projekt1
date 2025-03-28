@@ -19,7 +19,7 @@ template <typename T> struct DynamicList {
       newNode->next = next;
       newNode->initialized = true;
       next = newNode;
-    } else if (!initialized) {
+    } else if (!initialized && next == nullptr) {
       this->data = element;
       this->initialized = true;
     } else {
@@ -30,7 +30,7 @@ template <typename T> struct DynamicList {
   void pad() {
     if (next == nullptr) {
       DynamicList<T> *newNode = new DynamicList<T>;
-      newNode->next = next;
+      newNode->next = nullptr;
       newNode->initialized = false;
       next = newNode;
     } else {
@@ -41,10 +41,11 @@ template <typename T> struct DynamicList {
   void insert(T element, unsigned index) {
     unsigned len = this->len();
     if (index >= len) {
-      for (unsigned i = len; i < index; i++) {
+      for (unsigned i = len; i <= index; i++) {
         this->pad();
       }
-      this->push(element);
+      this->get_pointer(index)->data = element;
+      this->get_pointer(index)->initialized = true;
     } else {
       DynamicList<T> *chosen = this->get_pointer(index);
       chosen->data = element;
@@ -156,18 +157,16 @@ struct Graph {
   void add(Edge edge) {
     edges.push(edge); // For sorting
 
+    std::cout << "Pre add len: " << body.len() << std::endl;
     if (body.len() <= edge.vertex1) {
-      DynamicList<Edge> temp;
-      temp.push(edge);
-      body.insert(temp, edge.vertex1);
+      body.insert({edge, nullptr, true}, edge.vertex1);
     } else {
+      std::cout << "Pushing" << std::endl;
       body.get_pointer(edge.vertex1)->data.push(edge);
     }
 
     if (body.len() <= edge.vertex2) {
-      DynamicList<Edge> temp;
-      temp.push(edge);
-      body.insert(temp, edge.vertex2);
+      body.insert({edge, nullptr, true}, edge.vertex2);
     } else {
       body.get_pointer(edge.vertex2)->data.push(edge);
     }
@@ -186,13 +185,13 @@ struct Graph {
 
 void traverse(Graph graph, unsigned vertex, DynamicList<unsigned> &visits) {
   visits.push(vertex);
-  /* std::cout << "Visiting " << vertex << std::endl; */
+  std::cout << "Visiting " << vertex << std::endl;
   DynamicList<Edge> edgeList = graph.body.get(vertex);
-  /* std::cout << "len: " << graph.body.get(vertex).len() << std::endl; */
+  std::cout << "len: " << graph.body.get(vertex).len() << std::endl;
   for (unsigned i = 0; i < edgeList.len(); i++) {
     Edge edge = edgeList.get(i);
-    /* std::cout << "Can go to: " << edge.vertex1 << " " << edge.vertex2 */
-    /*           << std::endl; */
+    std::cout << "Can go to: " << edge.vertex1 << " " << edge.vertex2
+              << std::endl;
     if (!visits.contains(edge.vertex2)) {
       traverse(graph, edge.vertex2, visits);
     }
@@ -204,7 +203,7 @@ void traverse(Graph graph, unsigned vertex, DynamicList<unsigned> &visits) {
 
 bool wouldFormLoop(Graph graph, Edge edge) {
   if (graph.body.len() <= edge.vertex1 || graph.body.len() <= edge.vertex2) {
-    /* std::cout << "SHORT" << std::endl; */
+    std::cout << "SHORT" << std::endl;
     return false;
   }
   DynamicList<unsigned> visited;
@@ -226,29 +225,31 @@ int main() {
   }
 
   graph.edges.sort(&Edge::cmp);
-  /* std::cout << "Length: " << graph.body.len() << std::endl; */
-  /* for (unsigned i = 0; i < graph.body.len(); i++) { */
-  /*   std::cout << "vertex " << i << "neighbors: " << graph.body.get(i).len()
-   */
-  /*             << std::endl; */
-  /* } */
+  std::cout << "Length: " << graph.body.len() << std::endl;
+  for (unsigned i = 0; i < graph.body.len(); i++) {
+    std::cout << "vertex " << i << "neighbors: " << graph.body.get(i).len()
+              << std::endl;
+  }
   Graph output;
   for (unsigned i = 0; i < graph.edges.len(); i++) {
-    /* std::cout << "Checking " << i << std::endl; */
+    std::cout << "Checking " << i << std::endl;
     if (!wouldFormLoop(output, graph.edges.get(i))) {
       output.add(graph.edges.get(i));
-      /* std::cout << "After add length: " << output.body.len() << std::endl; */
-      /* for (unsigned i = 0; i < output.body.len(); i++) { */
-      /*   std::cout << "vertex " << i << "neighbors: " <<
-       * output.body.get(i).len() */
-      /*             << std::endl; */
-      /* } */
+      std::cout << "Added edge: "
+                << output.edges.get(output.edges.len() - 1).vertex1 << " "
+                << output.edges.get(output.edges.len() - 1).vertex2 << " "
+                << output.edges.get(output.edges.len() - 1).weight << std::endl;
+      std::cout << "After add length: " << output.body.len() << std::endl;
+      for (unsigned i = 0; i < output.body.len(); i++) {
+        std::cout << "vertex " << i << "neighbors: " << output.body.get(i).len()
+                  << std::endl;
+      }
     }
   }
 
   std::cout << "Created new graph with " << output.edges.len() << " edges:\n";
-  for (unsigned i = 0; i < output.edges.len(); i++) {
-    Edge edge = output.edges.get(i);
+  for (unsigned i = 0; i < graph.edges.len(); i++) {
+    Edge edge = graph.edges.get(i);
     std::cout << edge.vertex1 + 1 << " " << edge.vertex2 + 1 << " "
               << edge.weight << "\n";
   }
