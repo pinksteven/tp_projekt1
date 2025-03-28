@@ -248,8 +248,8 @@ int main() {
   }
 
   std::cout << "Created new graph with " << output.edges.len() << " edges:\n";
-  for (unsigned i = 0; i < graph.edges.len(); i++) {
-    Edge edge = graph.edges.get(i);
+  for (unsigned i = 0; i < output.edges.len(); i++) {
+    Edge edge = output.edges.get(i);
     std::cout << edge.vertex1 + 1 << " " << edge.vertex2 + 1 << " "
               << edge.weight << "\n";
   }
